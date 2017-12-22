@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,动画," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="属性动画的启动分析在本文中,我们会分析属性动画如何启动的而且和Andoid 黄油计划有什么关系 我们看看 ObjectAnimator.start() 12345678910111213public void start() &amp;#123;        AnimationHandler.getInstance().autoCancelBasedOn(this);        if (DBG) &amp;">
+<meta name="keywords" content="Android,动画">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解Android属性动画的实现(动画启动)-2">
+<meta property="og:url" content="http://dailycast.github.io/深入理解Android属性动画的实现-动画启动-2/index.html">
+<meta property="og:site_name" content="DailyCast 技术团队博客">
+<meta property="og:description" content="属性动画的启动分析在本文中,我们会分析属性动画如何启动的而且和Andoid 黄油计划有什么关系 我们看看 ObjectAnimator.start() 12345678910111213public void start() &amp;#123;        AnimationHandler.getInstance().autoCancelBasedOn(this);        if (DBG) &amp;">
+<meta property="og:updated_time" content="2017-12-22T08:11:34.857Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解Android属性动画的实现(动画启动)-2">
+<meta name="twitter:description" content="属性动画的启动分析在本文中,我们会分析属性动画如何启动的而且和Andoid 黄油计划有什么关系 我们看看 ObjectAnimator.start() 12345678910111213public void start() &amp;#123;        AnimationHandler.getInstance().autoCancelBasedOn(this);        if (DBG) &amp;">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dailycast.github.io/深入理解Android属性动画的实现-动画启动-2/"/>
+
+
+
+
+
+  <title>深入理解Android属性动画的实现(动画启动)-2 | DailyCast 技术团队博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">DailyCast 技术团队博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dailycast.github.io/深入理解Android属性动画的实现-动画启动-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="DailyCast">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="DailyCast 技术团队博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深入理解Android属性动画的实现(动画启动)-2</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-21T11:46:13+08:00">
+                2017-12-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="属性动画的启动分析"><a href="#属性动画的启动分析" class="headerlink" title="属性动画的启动分析"></a>属性动画的启动分析</h3><p>在本文中,我们会分析属性动画如何启动的而且和Andoid <code>黄油计划</code>有什么关系</p>
+<p>我们看看 <code>ObjectAnimator.start()</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        AnimationHandler.getInstance().autoCancelBasedOn(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">if</span> (DBG) &#123;</span><br><span class="line">            Log.d(LOG_TAG, <span class="string">"Anim target, duration: "</span> + getTarget() + <span class="string">", "</span> + getDuration());</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mValues.length; ++i) &#123;</span><br><span class="line">                PropertyValuesHolder pvh = mValues[i];</span><br><span class="line">                Log.d(LOG_TAG, <span class="string">"   Values["</span> + i + <span class="string">"]: "</span> +</span><br><span class="line">                    pvh.getPropertyName() + <span class="string">", "</span> + pvh.mKeyframes.getValue(<span class="number">0</span>) + <span class="string">", "</span> +</span><br><span class="line">                    pvh.mKeyframes.getValue(<span class="number">1</span>));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">super</span>.start();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p><code>AnimationHandler.getInstance().autoCancelBasedOn(this)</code> cancel 相同Target和相同属性的动画<br>AnimationHandler 实例在线程局部单例。<code>autoCancelBasedOn(this)</code>会遍历 <code>AnimationHandler</code>实例持有的所有未完成的 <code>ValueAnimator</code>实例，cancel 掉符合条件的动画。</p>
+<p>紧接着 <code>super.start()</code> 调用了<code>ValueAnimator.start()</code>  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</span><br><span class="line">     start(<span class="keyword">false</span>);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>调用了带参数的 <code>start</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">(<span class="keyword">boolean</span> playBackwards)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (Looper.myLooper() == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> AndroidRuntimeException(<span class="string">"Animators may only be run on Looper threads"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        mReversing = playBackwards;</span><br><span class="line">        </span><br><span class="line">			....</span><br><span class="line">			</span><br><span class="line">        mStarted = <span class="keyword">true</span>;</span><br><span class="line">        mPaused = <span class="keyword">false</span>;</span><br><span class="line">        mRunning = <span class="keyword">false</span>;</span><br><span class="line">        mAnimationEndRequested = <span class="keyword">false</span>;</span><br><span class="line">        <span class="comment">// Resets mLastFrameTime when start() is called, so that if the animation was running,</span></span><br><span class="line">        <span class="comment">// calling start() would put the animation in the</span></span><br><span class="line">        <span class="comment">// started-but-not-yet-reached-the-first-frame phase.</span></span><br><span class="line">        mLastFrameTime = <span class="number">0</span>;</span><br><span class="line">        AnimationHandler animationHandler = AnimationHandler.getInstance();</span><br><span class="line">        animationHandler.addAnimationFrameCallback(<span class="keyword">this</span>, (<span class="keyword">long</span>) (mStartDelay * sDurationScale));</span><br><span class="line"></span><br><span class="line"> 		....</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>我们略去与主流程无关的逻辑代码。这个方法标记了动画的状态，如</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mStarted = <span class="keyword">true</span>;</span><br><span class="line">mPaused = <span class="keyword">false</span>;</span><br><span class="line">mRunning = <span class="keyword">false</span>;</span><br></pre></td></tr></table></figure>
+<p>然后这个方法结束啦，有没有很疑惑？有没有很懵逼？动画怎么执行的？什么时候执行的？<br>要解答这问题，我们还是要分析 这两行不起眼的代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">AnimationHandler animationHandler = AnimationHandler.getInstance();</span><br><span class="line">animationHandler.addAnimationFrameCallback(<span class="keyword">this</span>, (<span class="keyword">long</span>) (mStartDelay * sDurationScale));</span><br></pre></td></tr></table></figure>
+<p>第一行在当前线程获取 <code>AnimationHandler</code>实例；<br>第二行注册了一个callback。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Register to get a callback on the next frame after the delay.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addAnimationFrameCallback</span><span class="params">(<span class="keyword">final</span> AnimationFrameCallback callback, <span class="keyword">long</span> delay)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mAnimationCallbacks.size() == <span class="number">0</span>) &#123;</span><br><span class="line">            getProvider().postFrameCallback(mFrameCallback);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!mAnimationCallbacks.contains(callback)) &#123;</span><br><span class="line">            mAnimationCallbacks.add(callback);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (delay &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            mDelayedCallbackStartTime.put(callback, (SystemClock.uptimeMillis() + delay));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">```  </span><br><span class="line">***注释说明:callback 会在delay 时间后的下一个 frame 获得回调。***</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line"><span class="keyword">if</span> (mAnimationCallbacks.size() == <span class="number">0</span>) &#123;</span><br><span class="line">   getProvider().postFrameCallback(mFrameCallback);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这两行代码 做了一件事情:保证一个<code>ValueAnimator</code>对象只向Provider注册一次 <code>mFrameCallback</code></p>
+<p>瞅瞅 <code>getProvider</code>是啥？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> AnimationFrameCallbackProvider <span class="title">getProvider</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mProvider == <span class="keyword">null</span>) &#123;</span><br><span class="line">        mProvider = <span class="keyword">new</span> MyFrameCallbackProvider();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> mProvider;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>创建了一个 <code>MyFrameCallbackProvider</code>实例， <code>MyFrameCallbackProvider</code> 继承  <code>AnimationFrameCallbackProvider</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AnimationFrameCallbackProvider</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">postFrameCallback</span><span class="params">(Choreographer.FrameCallback callback)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">postCommitCallback</span><span class="params">(Runnable runnable)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">long</span> <span class="title">getFrameTime</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">long</span> <span class="title">getFrameDelay</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setFrameDelay</span><span class="params">(<span class="keyword">long</span> delay)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>AnimationFrameCallbackProvider</code>接口定义了一些回调接口，按照注释说明主要作用是 提高 <code>ValueAnimator</code>的可测性，通过这个接口隔离，我们可以自定义 定时脉冲，而不用使用系统默认的 <code>Choreographer</code>,这样我们可以在测试中使用任意的时间间隔的定时脉冲.既然可以方便测试，那肯定有API来更改Provider 吧？</p>
+<p>果不其然，我们猜对了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setProvider</span><span class="params">(AnimationFrameCallbackProvider provider)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (provider == <span class="keyword">null</span>) &#123;</span><br><span class="line">       mProvider = <span class="keyword">new</span> MyFrameCallbackProvider();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">       mProvider = provider;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>ValueAnimator</code>提供了一个 <code>setProvider</code> 通过自定义的Provider 提供我们想要的任意时间间隔的回调，来更新动画。</p>
+<p>明白了 接口<code>AnimationFrameCallbackProvider</code>的作用，也知道了一个新的名词<code>Choreographer</code>,它就是 <strong><em>Android 黄油计划</em></strong> 的核心。使用vsync（垂直同步）来协调View的绘制和动画的执行间隔。关于 <code>Choreographer</code> 在文章最后会做进一步解释<br>我们知道了默认情况下系统使用<code>Choreographer</code>,我们可以简单的认为 它是一个与 绘制和动画有关的 <em><strong>消息处理器</strong></em> 。<br>继续我们的 代码 <code>AnimationHandler.addAnimationFrameCallback</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addAnimationFrameCallback</span><span class="params">(<span class="keyword">final</span> AnimationFrameCallback callback, <span class="keyword">long</span> delay)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (mAnimationCallbacks.size() == <span class="number">0</span>) &#123;</span><br><span class="line">       getProvider().postFrameCallback(mFrameCallback);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">if</span> (!mAnimationCallbacks.contains(callback)) &#123;</span><br><span class="line">       mAnimationCallbacks.add(callback);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (delay &gt; <span class="number">0</span>) &#123;</span><br><span class="line">       mDelayedCallbackStartTime.put(callback, (SystemClock.uptimeMillis() + delay));</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行了 <code>getProvider().postFrameCallback(mFrameCallback)</code> 通过上面的分析我们知道 <code>getProvider()</code> 得到的是一个<code>MyFrameCallbackProvider</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">    * Default provider of timing pulse that uses Choreographer for frame callbacks.</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">MyFrameCallbackProvider</span> <span class="keyword">implements</span> <span class="title">AnimationFrameCallbackProvider</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">final</span> Choreographer mChoreographer = Choreographer.getInstance();</span><br><span class="line"></span><br><span class="line">       <span class="meta">@Override</span></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">postFrameCallback</span><span class="params">(Choreographer.FrameCallback callback)</span> </span>&#123;</span><br><span class="line">           mChoreographer.postFrameCallback(callback);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="meta">@Override</span></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">postCommitCallback</span><span class="params">(Runnable runnable)</span> </span>&#123;</span><br><span class="line">           mChoreographer.postCallback(Choreographer.CALLBACK_COMMIT, runnable, <span class="keyword">null</span>);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="meta">@Override</span></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getFrameTime</span><span class="params">()</span> </span>&#123;</span><br><span class="line">           <span class="keyword">return</span> mChoreographer.getFrameTime();</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="meta">@Override</span></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getFrameDelay</span><span class="params">()</span> </span>&#123;</span><br><span class="line">           <span class="keyword">return</span> Choreographer.getFrameDelay();</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="meta">@Override</span></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setFrameDelay</span><span class="params">(<span class="keyword">long</span> delay)</span> </span>&#123;</span><br><span class="line">           Choreographer.setFrameDelay(delay);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>注释说明系统默认使用的 <code>Choreographer</code>做定时脉冲来协调 frame 的更新 。 </p>
+<p><code>MyFrameCallbackProvider.postFrameCallback()</code>方法调用了<code>mChoreographer.postFrameCallback(callback)</code> 这里说明一下 Choreographer 实例也是线程局部单例的。从这些信息中我们知道了动画可以在子线程中执行的(注意:这不意味着可以在子线程更新UI)，但是这个子线程必须有Looper。<br>接着分析 <code>Choreographer.postFrameCallback</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">postFrameCallback</span><span class="params">(FrameCallback callback)</span> </span>&#123;</span><br><span class="line">    postFrameCallbackDelayed(callback, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">postFrameCallbackDelayed</span><span class="params">(FrameCallback callback, <span class="keyword">long</span> delayMillis)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (callback == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"callback must not be null"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    postCallbackDelayedInternal(CALLBACK_ANIMATION,</span><br><span class="line">                callback, FRAME_CALLBACK_TOKEN, delayMillis);</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">postCallbackDelayedInternal</span><span class="params">(<span class="keyword">int</span> callbackType,</span></span></span><br><span class="line"><span class="function"><span class="params">            Object action, Object token, <span class="keyword">long</span> delayMillis)</span> </span>&#123;</span><br><span class="line">   ....</span><br><span class="line">   <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">long</span> now = SystemClock.uptimeMillis();</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">long</span> dueTime = now + delayMillis;</span><br><span class="line">      mCallbackQueues[callbackType].addCallbackLocked(dueTime, action, token);</span><br><span class="line">      <span class="keyword">if</span> (dueTime &lt;= now) &#123;</span><br><span class="line">          scheduleFrameLocked(now);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          Message msg = mHandler.obtainMessage(MSG_DO_SCHEDULE_CALLBACK, action);</span><br><span class="line">          msg.arg1 = callbackType;</span><br><span class="line">          msg.setAsynchronous(<span class="keyword">true</span>);</span><br><span class="line">          mHandler.sendMessageAtTime(msg, dueTime);</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line">``` </span><br><span class="line">动画使用的 `callbackType`为 `CALLBACK_ANIMATION`，而默认支持 三种类型：</span><br><span class="line"></span><br><span class="line"> `CALLBACK_INPUT`:处理输出相关的回调，最先被处理  </span><br><span class="line"> `CALLBACK_ANIMATION`:处理动画相关的回调，在 `CALLBACK_TRAVERSAL`类型之前处理  </span><br><span class="line"> `CALLBACK_TRAVERSAL`: 处理View 的layout 和 draw。该类型在所有其他异步消息处理完后开始处理，也基于这一点保证了界面不卡顿。</span><br><span class="line"> </span><br><span class="line"> 每一个类型的 `callbackType` 都拥有一个`CallbackQueue` 我们的动画callback 会通过 `mCallbackQueues[callbackType].addCallbackLocked(dueTime, action, token);` 保存在 `CallbackQueue`中成为一个链表中的一个节点。  </span><br><span class="line"> 处理完 callback 之后 下面会执行`scheduleFrameLocked()`  </span><br><span class="line"> </span><br><span class="line"> ```java</span><br><span class="line"> <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scheduleFrameLocked</span><span class="params">(<span class="keyword">long</span> now)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!mFrameScheduled) &#123;</span><br><span class="line">        mFrameScheduled = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (USE_VSYNC) &#123;</span><br><span class="line">            ...</span><br><span class="line">            <span class="keyword">if</span> (isRunningOnLooperThreadLocked()) &#123;</span><br><span class="line">                scheduleVsyncLocked();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                Message msg = mHandler.obtainMessage(MSG_DO_SCHEDULE_VSYNC);</span><br><span class="line">                msg.setAsynchronous(<span class="keyword">true</span>);</span><br><span class="line">                mHandler.sendMessageAtFrontOfQueue(msg);</span><br><span class="line">            &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">final</span> <span class="keyword">long</span> nextFrameTime = Math.max(</span><br><span class="line">                        mLastFrameTimeNanos / TimeUtils.NANOS_PER_MS + sFrameDelay, now);</span><br><span class="line">          Message msg = mHandler.obtainMessage(MSG_DO_FRAME);</span><br><span class="line">          msg.setAsynchronous(<span class="keyword">true</span>);</span><br><span class="line">          mHandler.sendMessageAtTime(msg, nextFrameTime);</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 默认情况下<code>USE_VSYNC</code>为true，当然设备厂商也可以设置为 false。如果 为false 会以 10 ms 为间隔计算下一次 doFrame 的时间，然后使用Handler来处理。  </p>
+<p> 我们看看 <code>scheduleVsyncLocked()</code> 这行代码做了何事?  </p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scheduleVsyncLocked</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   mDisplayEventReceiver.scheduleVsync();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> <code>mDisplayEventReceiver</code> 当<code>USE_VSYNC</code>为true 时 实例化成 <code>FrameDisplayEventReceiver</code>对象 ，它主要是和 native层 做交互，协调 vsync 信号。<br> <code>mDisplayEventReceiver.scheduleVsync()</code> 请求当下一帧开始时同步vsync信号。</p>
+<p> 当vsync 信号来时 回调 JNI 层会回调<code>DisplayEventReceiver.dispatchVsync</code>方法 </p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Called from native code.</span></span><br><span class="line"><span class="meta">@SuppressWarnings</span>(<span class="string">"unused"</span>)</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dispatchVsync</span><span class="params">(<span class="keyword">long</span> timestampNanos, <span class="keyword">int</span> builtInDisplayId, <span class="keyword">int</span> frame)</span> </span>&#123;</span><br><span class="line">    onVsync(timestampNanos, builtInDisplayId, frame);</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onVsync</span><span class="params">(<span class="keyword">long</span> timestampNanos, <span class="keyword">int</span> builtInDisplayId, <span class="keyword">int</span> frame)</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> <code>FrameDisplayEventReceiver</code>实现了<code>doVsync</code>方法</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">FrameDisplayEventReceiver</span> <span class="keyword">extends</span> <span class="title">DisplayEventReceiver</span></span></span><br><span class="line"><span class="class">           <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">       <span class="keyword">private</span> <span class="keyword">boolean</span> mHavePendingVsync;</span><br><span class="line">       <span class="keyword">private</span> <span class="keyword">long</span> mTimestampNanos;</span><br><span class="line">       <span class="keyword">private</span> <span class="keyword">int</span> mFrame;</span><br><span class="line"></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="title">FrameDisplayEventReceiver</span><span class="params">(Looper looper)</span> </span>&#123;</span><br><span class="line">           <span class="keyword">super</span>(looper);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="meta">@Override</span></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onVsync</span><span class="params">(<span class="keyword">long</span> timestampNanos, <span class="keyword">int</span> builtInDisplayId, <span class="keyword">int</span> frame)</span> </span>&#123;</span><br><span class="line">           ....</span><br><span class="line">           </span><br><span class="line">           <span class="keyword">long</span> now = System.nanoTime();</span><br><span class="line">           <span class="keyword">if</span> (timestampNanos &gt; now) &#123;</span><br><span class="line">        			....</span><br><span class="line">               timestampNanos = now;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">if</span> (mHavePendingVsync) &#123;</span><br><span class="line">               ....log</span><br><span class="line">           &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">               mHavePendingVsync = <span class="keyword">true</span>;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           mTimestampNanos = timestampNanos;</span><br><span class="line">           mFrame = frame;</span><br><span class="line">           Message msg = Message.obtain(mHandler, <span class="keyword">this</span>);</span><br><span class="line">           msg.setAsynchronous(<span class="keyword">true</span>);</span><br><span class="line">           mHandler.sendMessageAtTime(msg, timestampNanos / TimeUtils.NANOS_PER_MS);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="meta">@Override</span></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">           mHavePendingVsync = <span class="keyword">false</span>;</span><br><span class="line">           doFrame(mTimestampNanos, mFrame);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p> 主要实现:根据JNI层的 <code>timestampNanos</code>纳秒值计算成毫秒，通过 Handler 执行<br> <code>Runable</code>，即执行了<code>doFrame(mTimestampNanos, mFrame);</code>这行代码。  </p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">void</span> <span class="title">doFrame</span><span class="params">(<span class="keyword">long</span> frameTimeNanos, <span class="keyword">int</span> frame)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">final</span> <span class="keyword">long</span> startNanos;</span><br><span class="line">     <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">     	<span class="keyword">if</span> (!mFrameScheduled) &#123;</span><br><span class="line">         	<span class="keyword">return</span>; <span class="comment">// no work to do</span></span><br><span class="line">     	&#125;</span><br><span class="line"></span><br><span class="line">     	<span class="keyword">long</span> intendedFrameTimeNanos = frameTimeNanos;</span><br><span class="line">     	startNanos = System.nanoTime();</span><br><span class="line">     	<span class="keyword">final</span> <span class="keyword">long</span> jitterNanos = startNanos - frameTimeNanos;</span><br><span class="line">     	<span class="keyword">if</span> (jitterNanos &gt;= mFrameIntervalNanos) &#123;</span><br><span class="line">        	 <span class="keyword">final</span> <span class="keyword">long</span> skippedFrames = jitterNanos / mFrameIntervalNanos;</span><br><span class="line">         	<span class="keyword">if</span> (skippedFrames &gt;= SKIPPED_FRAME_WARNING_LIMIT) &#123;</span><br><span class="line">     				....</span><br><span class="line">         	&#125;</span><br><span class="line">         	<span class="keyword">final</span> <span class="keyword">long</span> lastFrameOffset = jitterNanos % mFrameIntervalNanos;</span><br><span class="line">         	....</span><br><span class="line">         	frameTimeNanos = startNanos - lastFrameOffset;</span><br><span class="line">      	&#125;</span><br><span class="line"></span><br><span class="line">      	<span class="keyword">if</span> (frameTimeNanos &lt; mLastFrameTimeNanos) &#123;</span><br><span class="line">				....</span><br><span class="line">          	scheduleVsyncLocked();</span><br><span class="line">          	<span class="keyword">return</span>;</span><br><span class="line">       	&#125;</span><br><span class="line"></span><br><span class="line">       	mFrameInfo.setVsync(intendedFrameTimeNanos, frameTimeNanos);</span><br><span class="line">      	 	mFrameScheduled = <span class="keyword">false</span>;</span><br><span class="line">       	mLastFrameTimeNanos = frameTimeNanos;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">         Trace.traceBegin(Trace.TRACE_TAG_VIEW, <span class="string">"Choreographer#doFrame"</span>);</span><br><span class="line">         AnimationUtils.lockAnimationClock(frameTimeNanos / TimeUtils.NANOS_PER_MS);</span><br><span class="line"></span><br><span class="line">         mFrameInfo.markInputHandlingStart();</span><br><span class="line">         doCallbacks(Choreographer.CALLBACK_INPUT, frameTimeNanos);</span><br><span class="line"></span><br><span class="line">         mFrameInfo.markAnimationsStart();</span><br><span class="line">         doCallbacks(Choreographer.CALLBACK_ANIMATION, frameTimeNanos);</span><br><span class="line"></span><br><span class="line">         mFrameInfo.markPerformTraversalsStart();</span><br><span class="line">         doCallbacks(Choreographer.CALLBACK_TRAVERSAL, frameTimeNanos);</span><br><span class="line"></span><br><span class="line">         doCallbacks(Choreographer.CALLBACK_COMMIT, frameTimeNanos);</span><br><span class="line">     &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">         AnimationUtils.unlockAnimationClock();</span><br><span class="line">         Trace.traceEnd(Trace.TRACE_TAG_VIEW);</span><br><span class="line">     &#125;</span><br><span class="line">	.....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 与动画相关的关键代码: </p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mFrameInfo.markAnimationsStart();</span><br><span class="line">doCallbacks(Choreographer.CALLBACK_ANIMATION, frameTimeNanos);</span><br></pre></td></tr></table></figure>
+<p> 以下是 doCallbacks的实现，有没有感觉即将看见胜利的曙光？</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">doCallbacks</span><span class="params">(<span class="keyword">int</span> callbackType, <span class="keyword">long</span> frameTimeNanos)</span> </span>&#123;</span><br><span class="line">    CallbackRecord callbacks;</span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> now = System.nanoTime();</span><br><span class="line">        <span class="comment">//取出可以执行的CallbackRecord 链表。</span></span><br><span class="line">        callbacks = mCallbackQueues[callbackType].extractDueCallbacksLocked(</span><br><span class="line">                   now / TimeUtils.NANOS_PER_MS);</span><br><span class="line">        <span class="keyword">if</span> (callbacks == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        mCallbacksRunning = <span class="keyword">true</span>;</span><br><span class="line">	  ....略去与动画无关的代码</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">try</span> &#123;</span><br><span class="line">           Trace.traceBegin(Trace.TRACE_TAG_VIEW, CALLBACK_TRACE_TITLES[callbackType]);</span><br><span class="line">           <span class="keyword">for</span> (CallbackRecord c = callbacks; c != <span class="keyword">null</span>; c = c.next) &#123;</span><br><span class="line">				.... log</span><br><span class="line">				<span class="comment">//循环执行链表</span></span><br><span class="line">               c.run(frameTimeNanos);</span><br><span class="line">           &#125;</span><br><span class="line">       &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">           <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">               mCallbacksRunning = <span class="keyword">false</span>;</span><br><span class="line">               <span class="keyword">do</span> &#123;</span><br><span class="line">                   <span class="keyword">final</span> CallbackRecord next = callbacks.next;</span><br><span class="line">                   recycleCallbackLocked(callbacks);</span><br><span class="line">                   callbacks = next;</span><br><span class="line">               &#125; <span class="keyword">while</span> (callbacks != <span class="keyword">null</span>);</span><br><span class="line">           &#125;</span><br><span class="line">           Trace.traceEnd(Trace.TRACE_TAG_VIEW);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p> 所以该方法最核心的功能是找到需要执行的 <code>CallbackRecord</code>链表，然后循环执行 它们的 <code>run</code>方法。</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CallbackRecord</span> </span>&#123;</span><br><span class="line">       <span class="keyword">public</span> CallbackRecord next;</span><br><span class="line">       <span class="keyword">public</span> <span class="keyword">long</span> dueTime;</span><br><span class="line">       <span class="keyword">public</span> Object action; <span class="comment">// Runnable or FrameCallback</span></span><br><span class="line">       <span class="keyword">public</span> Object token;</span><br><span class="line"></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">(<span class="keyword">long</span> frameTimeNanos)</span> </span>&#123;</span><br><span class="line">           <span class="keyword">if</span> (token == FRAME_CALLBACK_TOKEN) &#123;</span><br><span class="line">               ((FrameCallback)action).doFrame(frameTimeNanos);</span><br><span class="line">           &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">               ((Runnable)action).run();</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p> 在前面 注册回调<code>postFrameCallbackDelayed</code>时 token 是 <code>FRAME_CALLBACK_TOKEN</code> 所以执行 run 方法中的第一个if 分支<code>((FrameCallback)action).doFrame(frameTimeNanos);</code><br>  回调     <code>FrameCallback.doFrame(frameTimeNanos)</code> 方法。<br>  下面是 <code>Choreographer.FrameCallback</code> 的实现</p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Choreographer.FrameCallback mFrameCallback = <span class="keyword">new</span> Choreographer.FrameCallback() &#123;</span><br><span class="line">      <span class="meta">@Override</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doFrame</span><span class="params">(<span class="keyword">long</span> frameTimeNanos)</span> </span>&#123;</span><br><span class="line">          doAnimationFrame(getProvider().getFrameTime());</span><br><span class="line">          <span class="keyword">if</span> (mAnimationCallbacks.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">              getProvider().postFrameCallback(<span class="keyword">this</span>);</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+<p> 看到<code>doAnimationFrame(getProvider().getFrameTime());</code>这一行代码，我们已经确认，我们的动画逻辑即将开始了。<br> 我们先搁置<code>doAnimationFrame</code>这行代码，先分析完 <code>doFrame</code> 回调。  </p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (mAnimationCallbacks.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    getProvider().postFrameCallback(<span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 这里如果 <code>mAnimationCallbacks.size &gt;0</code>会再次将该 callback 注册给 <code>Choreographer</code>。为什么还要注册一次呢？之前不是注册过一次了吗？难道<code>Choreographer</code>把这个callback 释放了。<br> 我们回到<code>Choreographer.doCallbacks</code>方法。<br> 有一段 final 括号体中的代码我们没有分析  </p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line">        mCallbacksRunning = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            <span class="keyword">final</span> CallbackRecord next = callbacks.next;</span><br><span class="line">            recycleCallbackLocked(callbacks);</span><br><span class="line">            callbacks = next;</span><br><span class="line">        &#125; <span class="keyword">while</span> (callbacks != <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    Trace.traceEnd(Trace.TRACE_TAG_VIEW);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 这里调用了<code>recycleCallbackLocked(callbacks);</code>来回收整个链表中的节点记录。</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">recycleCallbackLocked</span><span class="params">(CallbackRecord callback)</span> </span>&#123;</span><br><span class="line">   callback.action = <span class="keyword">null</span>;</span><br><span class="line">   callback.token = <span class="keyword">null</span>;</span><br><span class="line">   callback.next = mCallbackPool;</span><br><span class="line">   mCallbackPool = callback;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 当 <code>mAnimationCallbacks.size &gt;0</code>时 需要再次添加回调，以便来获取下一帧的回调。<br> 当动画 paused 或 end 后 mAnimationCallbacks 会相应的remove callback。</p>
+<h3 id="小结1"><a href="#小结1" class="headerlink" title="小结1"></a>小结1</h3><p>到目前为止 我们知道了当调用 <code>ObjectAnimator.start()</code>后:  </p>
+<ol>
+<li>取消之前的动画对相同属性,相同target的动画，防止出现多个动画同时更新 Target 的属性，出现错乱。不过这一行为默认是关闭的,设置<code>ObjectAnimator.setAutoCancel(true)</code>来打开;  </li>
+<li>执行 <code>ValueAnimator.start()</code>方法；  </li>
+<li><code>AnimationHandler.addAnimationFrameCallback</code>向<code>Choreographer</code>注册<code>Choreographer.FrameCallback</code>回调,通过该回调获得渲染时间脉冲的回调;  </li>
+<li>通过系统的<code>vsync</code>垂直同步信号来协调 cpu,gpu 和渲染的时序;  </li>
+<li><code>Choreographer</code> 获得 <code>vsync</code>信号后 根据 当前帧的<code>纳秒</code>来查找哪些 <code>Choreographer.FrameCallback</code>会被执行。  </li>
+<li>执行<code>AnimationHandler.doAnimationFrame()</code>方法，开始真正的动画逻辑。</li>
+</ol>
+<h3 id="动画属性更新"><a href="#动画属性更新" class="headerlink" title="动画属性更新"></a>动画属性更新</h3><p>刚才我们分析到 <code>AnimationHandler.doAnimationFrame()</code> 方法，现在看看这个方法的功能是什么?  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doAnimationFrame</span><span class="params">(<span class="keyword">long</span> frameTime)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">int</span> size = mAnimationCallbacks.size();</span><br><span class="line">   <span class="keyword">long</span> currentTime = SystemClock.uptimeMillis();</span><br><span class="line">   <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i++) &#123;</span><br><span class="line">        <span class="keyword">final</span> AnimationFrameCallback callback = mAnimationCallbacks.get(i);</span><br><span class="line">        <span class="keyword">if</span> (callback == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (isCallbackDue(callback, currentTime)) &#123;</span><br><span class="line">            callback.doAnimationFrame(frameTime);</span><br><span class="line">            <span class="keyword">if</span> (mCommitCallbacks.contains(callback)) &#123;</span><br><span class="line">                getProvider().postCommitCallback(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                   <span class="meta">@Override</span></span><br><span class="line">                   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                      commitAnimationFrame(callback, getProvider().getFrameTime());</span><br><span class="line">                   &#125;</span><br><span class="line">                &#125;);</span><br><span class="line">             &#125;</span><br><span class="line">        &#125;</span><br><span class="line">   &#125;<span class="comment">//for</span></span><br><span class="line">   cleanUpList();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该方法主要作用是遍历所有的 <code>AnimationFrameCallback</code>。 这个<code>AnimationFrameCallback</code> 是什么？什么时候添加到<code>mAnimationCallbacks</code>的？<br>刚才分析<code>Choreographer.FrameCallback.doFrame</code>时提到过，在动画paused 或 end 时会将<code>AnimationFrameCallback</code> 从<code>mAnimationCallbacks</code>中移除，如果<code>mAnimationCallbacks</code>的size 为0 就不再向<code>Choreographer</code>注册 callback。也就代表没有动画要被执行了。<br>其实 <code>AnimationFrameCallback</code>就是 <code>ObjectAnimator</code>或<code>ValueAnimaor</code>本身。我们看看 <code>ValueAnimator</code>的定义:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ValueAnimator</span> <span class="keyword">extends</span> <span class="title">Animator</span> <span class="keyword">implements</span> <span class="title">AnimationHandler</span>.<span class="title">AnimationFrameCallback</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以 这些<code>AnimationFrameCallback</code>就是那些待执行的 <code>属性动画</code>。<br>接下来看看<code>isCallbackDue(callback, currentTime)</code>这个 <code>if</code> 判断:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isCallbackDue</span><span class="params">(AnimationFrameCallback callback, <span class="keyword">long</span> currentTime)</span> </span>&#123;</span><br><span class="line">   Long startTime = mDelayedCallbackStartTime.get(callback);</span><br><span class="line">   <span class="keyword">if</span> (startTime == <span class="keyword">null</span>) &#123;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (startTime &lt; currentTime) &#123;</span><br><span class="line">        mDelayedCallbackStartTime.remove(callback);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>根据 当前的的 纳秒时间 判断 动画是否需要执行，因为有些动画做了<code>delay</code>可能在当前的frame 窗口不需要执行。<br><code>callback.doAnimationFrame(frameTime);</code> 这行代码 开始回调 <code>ValueAnimator.doAnimationFrame</code>方法。然后判断<code>if (mCommitCallbacks.contains(callback))</code> 为 true的话会再次向<code>Choreographer</code>注册一个<code>Runnable</code>的callback，当下一个 frame 时间到来时 执行 <code>Runnable</code>。  </p>
+<p>我们关注<strong>重点代码</strong><code>callback.doAnimationFrame(frameTime)</code> 也即是<code>ValueAnimator.doAnimationFrame(frameTime)</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">doAnimationFrame</span><span class="params">(<span class="keyword">long</span> frameTime)</span> </span>&#123;</span><br><span class="line">   AnimationHandler handler = AnimationHandler.getInstance();</span><br><span class="line">   <span class="keyword">if</span> (mLastFrameTime == <span class="number">0</span>) &#123;</span><br><span class="line">       <span class="comment">// First frame</span></span><br><span class="line">       <span class="comment">//如果是动画的第一次回调，注册调整到下一个 frame 窗口 再执行。</span></span><br><span class="line">       handler.addOneShotCommitCallback(<span class="keyword">this</span>);</span><br><span class="line">       <span class="keyword">if</span> (mStartDelay &gt; <span class="number">0</span>) &#123;</span><br><span class="line">           startAnimation();</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">if</span> (mSeekFraction &lt; <span class="number">0</span>) &#123;</span><br><span class="line">           mStartTime = frameTime;</span><br><span class="line">       &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">           <span class="keyword">long</span> seekTime = (<span class="keyword">long</span>) (getScaledDuration() * mSeekFraction);</span><br><span class="line">           mStartTime = frameTime - seekTime;</span><br><span class="line">           mSeekFraction = -<span class="number">1</span>;</span><br><span class="line">       &#125;</span><br><span class="line">       mStartTimeCommitted = <span class="keyword">false</span>; <span class="comment">// allow start time to be compensated for jank</span></span><br><span class="line">    &#125;</span><br><span class="line">    mLastFrameTime = frameTime;</span><br><span class="line">    <span class="keyword">if</span> (mPaused) &#123;</span><br><span class="line">        mPauseTime = frameTime;</span><br><span class="line">        handler.removeCallback(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mResumed) &#123;</span><br><span class="line">        mResumed = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (mPauseTime &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// Offset by the duration that the animation was paused</span></span><br><span class="line">            mStartTime += (frameTime - mPauseTime);</span><br><span class="line">            mStartTimeCommitted = <span class="keyword">false</span>; <span class="comment">// allow start time to be compensated for jank</span></span><br><span class="line">        &#125;</span><br><span class="line">        handler.addOneShotCommitCallback(<span class="keyword">this</span>);</span><br><span class="line">   &#125;</span><br><span class="line">   ... comments</span><br><span class="line">   <span class="keyword">final</span> <span class="keyword">long</span> currentTime = Math.max(frameTime, mStartTime);</span><br><span class="line">   <span class="keyword">boolean</span> finished = animateBasedOnTime(currentTime);</span><br><span class="line">   <span class="keyword">if</span> (finished) &#123;</span><br><span class="line">       endAnimation();</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当时第一帧动画时 会调整到下一个 frame 窗口执行。如果这个动画是 delay 动画，会执行<code>startAnimation()</code>初始化动画，标记动画正在 <code>mRunning</code>，并且 对<code>PropertyValuesHolder</code>执行初始化操作–主要就是初始化<code>估值器</code>。<br>下面分析 <code>boolean finished = animateBasedOnTime(currentTime);</code><br>返回值 <code>finished</code>标记是否动画已经执行完毕。如果最后一个关键帧(Keyframe)执行完毕,这里返回true，会执行<code>endAnimation()</code>做一些状态位复位和动画结束回调等等。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">animateBasedOnTime</span><span class="params">(<span class="keyword">long</span> currentTime)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">boolean</span> done = <span class="keyword">false</span>;</span><br><span class="line">   <span class="keyword">if</span> (mRunning) &#123;</span><br><span class="line">       <span class="keyword">final</span> <span class="keyword">long</span> scaledDuration = getScaledDuration();</span><br><span class="line">       <span class="keyword">final</span> <span class="keyword">float</span> fraction = scaledDuration &gt; <span class="number">0</span> ?</span><br><span class="line">                    (<span class="keyword">float</span>)(currentTime - mStartTime) / scaledDuration : <span class="number">1f</span>;</span><br><span class="line">       <span class="keyword">final</span> <span class="keyword">float</span> lastFraction = mOverallFraction;</span><br><span class="line">       <span class="keyword">final</span> <span class="keyword">boolean</span> newIteration = (<span class="keyword">int</span>) fraction &gt; (<span class="keyword">int</span>) lastFraction;</span><br><span class="line">       <span class="keyword">final</span> <span class="keyword">boolean</span> lastIterationFinished = (fraction &gt;= mRepeatCount + <span class="number">1</span>) &amp;&amp;</span><br><span class="line">                    (mRepeatCount != INFINITE);</span><br><span class="line">       <span class="keyword">if</span> (scaledDuration == <span class="number">0</span>) &#123;</span><br><span class="line">           <span class="comment">// 0 duration animator, ignore the repeat count and skip to the end</span></span><br><span class="line">           done = <span class="keyword">true</span>;</span><br><span class="line">       &#125; <span class="keyword">else</span> <span class="keyword">if</span> (newIteration &amp;&amp; !lastIterationFinished) &#123;</span><br><span class="line">          <span class="comment">// Time to repeat</span></span><br><span class="line">          <span class="keyword">if</span> (mListeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">              <span class="keyword">int</span> numListeners = mListeners.size();</span><br><span class="line">              <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numListeners; ++i) &#123;</span><br><span class="line">                   mListeners.get(i).onAnimationRepeat(<span class="keyword">this</span>);</span><br><span class="line">              &#125;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125; <span class="keyword">else</span> <span class="keyword">if</span> (lastIterationFinished) &#123;</span><br><span class="line">           done = <span class="keyword">true</span>;</span><br><span class="line">       &#125;</span><br><span class="line">       mOverallFraction = clampFraction(fraction);</span><br><span class="line">       <span class="keyword">float</span> currentIterationFraction = getCurrentIterationFraction(mOverallFraction);</span><br><span class="line">       animateValue(currentIterationFraction);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> done;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>currentTime</code>是<code>Choreographer</code>发出的计时脉冲时间，纳秒计时。<br>根据 <code>currentTime</code> 计算 <code>fraction</code>系数，即动画时间流逝比。<br>然后执行<code>animateValue(currentIterationFraction)</code> 计算动画的在当前时间比例下属性动画的值，如果是 <code>ObjectAnimator</code>还会降属性值设置该<code>Target</code>。<br><code>animateValue</code>方法被 <code>ObjectAnimator</code> 重载了。我们先分析<code>ValueAnimator. animateValue(fraction)</code> 然后再分析<code>ObjectAnimator. animateValue(fraction)</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">animateValue</span><span class="params">(<span class="keyword">float</span> fraction)</span> </span>&#123;</span><br><span class="line">   fraction = mInterpolator.getInterpolation(fraction);</span><br><span class="line">   mCurrentFraction = fraction;</span><br><span class="line">   <span class="keyword">int</span> numValues = mValues.length;</span><br><span class="line">   <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numValues; ++i) &#123;</span><br><span class="line">        mValues[i].calculateValue(fraction);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">if</span> (mUpdateListeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">       <span class="keyword">int</span> numListeners = mUpdateListeners.size();</span><br><span class="line">       <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numListeners; ++i) &#123;</span><br><span class="line">            mUpdateListeners.get(i).onAnimationUpdate(<span class="keyword">this</span>);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>参数 <code>fraction</code>这个时间流逝比系数 是线性的。通过<code>mInterpolator.getInterpolation()</code>计算出我们想要的fraction。然后使用这个系数计算 <code>PropertyValuesHolder.calculateValue(fraction)</code>。<br>计算完 属性值后 执行 <code>mUpdateListeners</code>的更新操作。到目前为止我们终于知道我们经常使用的 <code>AnimatorUpdateListener.onAnimationUpdate（）</code>何时执行的了。</p>
+<p>我们再分析 被 <code>ObjectAnimator</code>重载后的<code>animateValue(fraction)</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">animateValue</span><span class="params">(<span class="keyword">float</span> fraction)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">final</span> Object target = getTarget();</span><br><span class="line">   <span class="keyword">if</span> (mTarget != <span class="keyword">null</span> &amp;&amp; target == <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="comment">// We lost the target reference, cancel and clean up. Note: we allow null target if the</span></span><br><span class="line">    <span class="comment">/// target has never been set.</span></span><br><span class="line">    cancel();</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">super</span>.animateValue(fraction);</span><br><span class="line">    <span class="keyword">int</span> numValues = mValues.length;</span><br><span class="line">     <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numValues; ++i) &#123;</span><br><span class="line">          mValues[i].setAnimatedValue(target);</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要功能是 通过调用 <code>super.animateValue()</code>计算属性的值。然后调用<code>PropertyValuesHolder.setAnimatedValue(Object)</code>来更新属性值到对应的<code>Target</code>上。</p>
+<p><a href="http://aicoding.tech/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Android%E5%B1%9E%E6%80%A7%E5%8A%A8%E7%94%BB%E7%9A%84%E5%AE%9E%E7%8E%B0-1/" target="_blank" rel="external">深入理解Android属性动画的实现-1</a> 这篇文章中介绍过 <code>PropertyValuesHolder</code>具有更新属性的能力，也持有<code>关键帧</code>的引用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setAnimatedValue</span><span class="params">(Object target)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (mProperty != <span class="keyword">null</span>) &#123;</span><br><span class="line">       mProperty.set(target, getAnimatedValue());</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">if</span> (mSetter != <span class="keyword">null</span>) &#123;</span><br><span class="line">       <span class="keyword">try</span> &#123;</span><br><span class="line">         mTmpValueArray[<span class="number">0</span>] = getAnimatedValue();</span><br><span class="line">         mSetter.invoke(target, mTmpValueArray);</span><br><span class="line">       &#125; <span class="keyword">catch</span> (InvocationTargetException e) &#123;</span><br><span class="line">                Log.e(<span class="string">"PropertyValuesHolder"</span>, e.toString());</span><br><span class="line">       &#125; <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">                Log.e(<span class="string">"PropertyValuesHolder"</span>, e.toString());</span><br><span class="line">       &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过 <code>Property</code>更新属性值。如果之前是通过 <code>propertyName</code>来初始化的动画，这里通过 <code>mSetter</code>来反射调用 set 方法，更新属性值。</p>
+<p><a href="http://aicoding.tech/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Android%E5%B1%9E%E6%80%A7%E5%8A%A8%E7%94%BB%E7%9A%84%E5%AE%9E%E7%8E%B0-1/#Keyframe" target="_blank" rel="external">深入理解Android属性动画的实现-1</a> 这篇文章还介绍了如何通过<code>fraction</code>计算动画的属性值。这里就不在赘述。 </p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>到目前位置我们已经分析完 属性动画的创建—&gt; 属性动画的启动 –&gt; 属性的计算和更新。<br>这里我们再回顾一下:</p>
+<ol>
+<li><code>ObjectAnimator.start()</code>开始启动动画；</li>
+<li>向<code>Choreographer</code>注册callback；</li>
+<li><code>Choreographer</code>获得<code>vsync</code>垂直同步信号量后回调<code>Choreographer.FrameCallback.doFrame()</code>执行逻辑进入到<code>AnimationHandler</code>中；</li>
+<li><code>AnimationHandler</code>持有 <code>AnimationFrameCallback</code>也即是<code>ValueAnimator</code>,然后执行<code>ValueAnimator.doAnimationFrame(time)</code>;</li>
+<li><code>ValueAnimator.animateBasedOnTime(time)</code>执行，通过 <code>TimeInterpolator</code>计算最终的 时间流逝比<code>fraction</code>,然后调用<code>PropertyValuesHolder.calculateValue(fraction)</code>计算属性的值，并回调 <code>AnimatorUpdateListener.onAnimationUpdate()</code>方法。</li>
+<li><code>PropertyValuesHolder</code>调用<code>Keyframes.getIntValue(fraction)</code>,这中间又使用到估值器<code>TypeEvaluator</code>和<code>Keyframe</code>最终结算处我们需要的属性值。</li>
+<li>然后<code>ObjectAnimator</code>调用<code>PropertyValuesHolder.setAnimatedValue(target)</code>来更新 <code>target</code>的属性值。</li>
+</ol>
+<h3 id="附加知识点"><a href="#附加知识点" class="headerlink" title="附加知识点"></a>附加知识点</h3><p>文章中提到过<code>Choreographer</code>和<code>Android黄油计划</code>。其实在本文的流程分析中已经简单分析了 <code>Choreographer</code>在动画类型上的执行流程：  </p>
+<ol>
+<li>创建<code>DisplayEventReceiver</code>的子类<code>FrameDisplayEventReceiver</code>来与JNI 层交互。JNI层的 <code>vsync</code>信号量通过callback 这个类的 <code>dispatchVsync</code>方法来告诉应用层 可以开始新的一帧的渲染了。  </li>
+<li><code>Choreographer</code>接收到 <code>vsync</code>信号后执行<code>doFrame(frameTimeNanos,frame)</code>方法，对三个支持的类型<code>CALLBACK_INPUT</code>,<code>CALLBACK_ANIMATION</code>,<code>CALLBACK_TRAVERSAL</code>做相应的回调。<br><strong>需要说明下:</strong>  _源码中还有一个类型<code>CALLBACK_COMMIT</code>主要处理注册 commit Runnable的需求，即延迟一个frame 的需求。因为它是一种业务辅助，不像其它三种，有明显的业务支持。所以在本文中倾向说三种支持类型，请知悉_。  </li>
+<li>回调进入<code>Choreographer.FrameCallback.doFrame(timeNanos)</code>  </li>
+<li>然后进入到业务层，例如 :<br><code>CALLBACK_ANIMATION</code>类型进入到<code>AnimationHandler.mFrameCallback</code>;<br><code>CALLBACK_TRAVERSAL</code>类型进入到<code>ViewRootImpl</code> 执行<code>scheduleTraversals()</code> 进而执行了<code>View.layout</code>,<code>View.measure</code>,<code>View.draw</code>方法开启View的渲染操作；  <code>CALLBACK_INPUT</code>这个类型相比前两个特殊一些，因为输入事件由另一个引擎负责。让输入引擎产生输入事件后不是立刻在 视图层产生响应。而是要等待下一个 <code>vsync</code>垂直同步信号，跟着统一的时钟脉冲来响应。所以 在<code>ViewRootImpl</code>中会使用到<code>mChoreographer.postCallback(Choreographer.CALLBACK_INPUT,mConsumedBatchedInputRunnable, null)</code>。具体这里不再展开描述。</li>
+</ol>
+<p>简言之，<code>Choreographer</code>就是一个消息处理器，根据 <code>vsync</code>垂直同步信号 来处理三种支持类型的回调。</p>
+<p>至于 <code>Android黄油计划(Project Butter)</code> <code>Choreographer</code>只是其中一个重要的特性。还有其他方便的优化。例如 引入了<code>三重缓冲</code>和 JNI层的<code>vsync</code>。至于 <code>vsync</code>的好处以及和 该计划之前 的Android的渲染相比 请参考<a href="http://blog.csdn.net/michaelcao1980/article/details/43233765" target="_blank" rel="external">Android 4.4 Graphic系统详解（2） VSYNC的生成</a> 这篇优质文章。在这里也对该篇文章的愿作者致敬。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:</strong>
+    DailyCast
+  </li>
+  <li class="post-copyright-link">
+    <strong>Post link:</strong>
+    <a href="http://dailycast.github.io/深入理解Android属性动画的实现-动画启动-2/" title="深入理解Android属性动画的实现(动画启动)-2">http://dailycast.github.io/深入理解Android属性动画的实现-动画启动-2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice: </strong>
+    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> unless stating additionally.
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/动画/" rel="tag"># 动画</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/Android属性动画分析/" rel="next" title="Android属性动画分析">
+                <i class="fa fa-chevron-left"></i> Android属性动画分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="commenthub_thread"></div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">DailyCast</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#属性动画的启动分析"><span class="nav-number">1.</span> <span class="nav-text">属性动画的启动分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小结1"><span class="nav-number">2.</span> <span class="nav-text">小结1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动画属性更新"><span class="nav-number">3.</span> <span class="nav-text">动画属性更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#附加知识点"><span class="nav-number">5.</span> <span class="nav-text">附加知识点</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">DailyCast</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+  
+      <script type="text/javascript">
+        var commenthub_id = '33658114';
+        var commenthub_website = 'http://dailycast.github.io';
+        var commenthub_identifier = '深入理解Android属性动画的实现-动画启动-2/';
+        var commenthub_url = 'http://dailycast.github.io/深入理解Android属性动画的实现-动画启动-2/';
+        var commenthub_title = '深入理解Android属性动画的实现(动画启动)-2';
+        var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = 'https://commenthub.herokuapp.com/js/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      </script>
+  
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

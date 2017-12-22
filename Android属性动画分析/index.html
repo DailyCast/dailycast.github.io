@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Android,动画," />
 
 
 
@@ -79,13 +79,17 @@
 
 
 
+<meta name="description" content="属性动画分析概略Android 动画分三类:Drawable Animation:几帧图循环播放；View Animation : 只有基本的 缩放，平移，旋转，渐变，通过对 Canvas 操作来实现。只在绘制层做了动画假象，实际属性并未改变ValueAnimator:属性动画，可以实现更平滑的动画和对属性的变更。 我将从以下几个方面分析 属性动画的实现原理    通过常用 ObjectAnima">
+<meta name="keywords" content="Android,动画">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Kotlin-入门-基础1">
-<meta property="og:url" content="http://dailycast.github.io/Kotlin-入门-基础1/index.html">
+<meta property="og:title" content="Android属性动画分析">
+<meta property="og:url" content="http://dailycast.github.io/Android属性动画分析/index.html">
 <meta property="og:site_name" content="DailyCast 技术团队博客">
-<meta property="og:updated_time" content="2017-11-15T12:51:09.000Z">
+<meta property="og:description" content="属性动画分析概略Android 动画分三类:Drawable Animation:几帧图循环播放；View Animation : 只有基本的 缩放，平移，旋转，渐变，通过对 Canvas 操作来实现。只在绘制层做了动画假象，实际属性并未改变ValueAnimator:属性动画，可以实现更平滑的动画和对属性的变更。 我将从以下几个方面分析 属性动画的实现原理    通过常用 ObjectAnima">
+<meta property="og:updated_time" content="2017-12-21T03:44:21.528Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Kotlin-入门-基础1">
+<meta name="twitter:title" content="Android属性动画分析">
+<meta name="twitter:description" content="属性动画分析概略Android 动画分三类:Drawable Animation:几帧图循环播放；View Animation : 只有基本的 缩放，平移，旋转，渐变，通过对 Canvas 操作来实现。只在绘制层做了动画假象，实际属性并未改变ValueAnimator:属性动画，可以实现更平滑的动画和对属性的变更。 我将从以下几个方面分析 属性动画的实现原理    通过常用 ObjectAnima">
 
 
 
@@ -115,13 +119,13 @@
 
 
 
-  <link rel="canonical" href="http://dailycast.github.io/Kotlin-入门-基础1/"/>
+  <link rel="canonical" href="http://dailycast.github.io/Android属性动画分析/"/>
 
 
 
 
 
-  <title>Kotlin-入门-基础1 | DailyCast 技术团队博客</title>
+  <title>Android属性动画分析 | DailyCast 技术团队博客</title>
   
 
 
@@ -228,7 +232,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://dailycast.github.io/Kotlin-入门-基础1/">
+    <link itemprop="mainEntityOfPage" href="http://dailycast.github.io/Android属性动画分析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="DailyCast">
@@ -245,7 +249,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Kotlin-入门-基础1</h1>
+          <h1 class="post-title" itemprop="name headline">Android属性动画分析</h1>
         
 
         <div class="post-meta">
@@ -257,8 +261,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-15T13:00:03+08:00">
-                2017-11-15
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-26T10:54:26+08:00">
+                2017-11-26
               </time>
             
 
@@ -267,6 +271,28 @@
             
           </span>
 
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
           
 
           
@@ -295,7 +321,18 @@
       
 
       
-        
+        <h3 id="属性动画分析概略"><a href="#属性动画分析概略" class="headerlink" title="属性动画分析概略"></a>属性动画分析概略</h3><p>Android 动画分三类:<br><code>Drawable Animation</code>:几帧图循环播放；<br><code>View Animation</code> : 只有基本的 <code>缩放</code>，<code>平移</code>，<code>旋转</code>，<code>渐变</code>，通过对 <code>Canvas</code> 操作来实现。只在绘制层做了动画假象，实际属性并未改变<br><code>ValueAnimator</code>:属性动画，可以实现更平滑的动画和对属性的变更。</p>
+<p>我将从以下几个方面分析 属性动画的实现原理  </p>
+<ol>
+<li>通过常用 <code>ObjectAnimator.of..</code> 方法切入,深入分析 <code>PropertyValueHolder</code>,<code>Property</code>,<code>Keyframe</code>的实现原理和作用。    </li>
+<li>通过对属性动画的启动方式的解析 代入 Android 新的渲染方式(黄油计划)  </li>
+<li>属性动画其他常用API的使用  </li>
+<li><code>ValueAnimator</code>和<code>ObjectAnimator</code>的关系以及如何选择  </li>
+<li>高级的属性动画自定义方式。例如自定义<code>PropertyValueHolder</code>和自定义<code>keygrame</code>实现属性动画效果。  </li>
+</ol>
+<p>针对源码分析,前三篇文章会涉及的多一些，也更能体会到Android属性动画设计的巧妙和灵活之处。后几篇文章着重应用。</p>
+<p><strong>作为一个有责任心的程序员</strong>，我希望通过这几篇文章，能帮助小伙伴们更深入理解Android属性动画，而不仅仅局限在使用上。</p>
+
       
     </div>
     
@@ -315,7 +352,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>Post link:</strong>
-    <a href="http://dailycast.github.io/Kotlin-入门-基础1/" title="Kotlin-入门-基础1">http://dailycast.github.io/Kotlin-入门-基础1/</a>
+    <a href="http://dailycast.github.io/Android属性动画分析/" title="Android属性动画分析">http://dailycast.github.io/Android属性动画分析/</a>
   </li>
   <li class="post-copyright-license">
     <strong>Copyright Notice: </strong>
@@ -328,6 +365,14 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/动画/" rel="tag"># 动画</a>
+          
+        </div>
+      
 
       
       
@@ -337,8 +382,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/搭建Shopify-Git团队本地开发环境/" rel="next" title="搭建Shopify+Git团队本地开发环境">
-                <i class="fa fa-chevron-left"></i> 搭建Shopify+Git团队本地开发环境
+              <a href="/深入理解Android属性动画的实现-1/" rel="next" title="深入理解Android属性动画的实现-1">
+                <i class="fa fa-chevron-left"></i> 深入理解Android属性动画的实现-1
               </a>
             
           </div>
@@ -347,8 +392,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/Markdown-常用语法/" rel="prev" title="Markdown-常用语法">
-                Markdown-常用语法 <i class="fa fa-chevron-right"></i>
+              <a href="/深入理解Android属性动画的实现-动画启动-2/" rel="prev" title="深入理解Android属性动画的实现(动画启动)-2">
+                深入理解Android属性动画的实现(动画启动)-2 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -403,8 +448,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -466,6 +520,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#属性动画分析概略"><span class="nav-number">1.</span> <span class="nav-text">属性动画分析概略</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -614,9 +684,9 @@
       <script type="text/javascript">
         var commenthub_id = '33658114';
         var commenthub_website = 'http://dailycast.github.io';
-        var commenthub_identifier = 'Kotlin-入门-基础1/';
-        var commenthub_url = 'http://dailycast.github.io/Kotlin-入门-基础1/';
-        var commenthub_title = 'Kotlin-入门-基础1';
+        var commenthub_identifier = 'Android属性动画分析/';
+        var commenthub_url = 'http://dailycast.github.io/Android属性动画分析/';
+        var commenthub_title = 'Android属性动画分析';
         var dsq = document.createElement('script');
             dsq.type = 'text/javascript';
             dsq.async = true;

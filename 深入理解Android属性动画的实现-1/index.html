@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,动画," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="导读在文章开头我们先简单回忆一下常用的属性动画 API 有哪些？1.动画相关的类:ObjectAnimator,ValueAnimator,Property,PropertyValuesHolder,Keyframe,Keyframes,TimeInterpolator,TypeEvaluator在剖析过程中我们会解析相关类的作用和实现方式2.常用的 属性动画 方法: 12345ObjectAni">
+<meta name="keywords" content="Android,动画">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解Android属性动画的实现-1">
+<meta property="og:url" content="http://dailycast.github.io/深入理解Android属性动画的实现-1/index.html">
+<meta property="og:site_name" content="DailyCast 技术团队博客">
+<meta property="og:description" content="导读在文章开头我们先简单回忆一下常用的属性动画 API 有哪些？1.动画相关的类:ObjectAnimator,ValueAnimator,Property,PropertyValuesHolder,Keyframe,Keyframes,TimeInterpolator,TypeEvaluator在剖析过程中我们会解析相关类的作用和实现方式2.常用的 属性动画 方法: 12345ObjectAni">
+<meta property="og:updated_time" content="2017-12-21T02:18:58.452Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解Android属性动画的实现-1">
+<meta name="twitter:description" content="导读在文章开头我们先简单回忆一下常用的属性动画 API 有哪些？1.动画相关的类:ObjectAnimator,ValueAnimator,Property,PropertyValuesHolder,Keyframe,Keyframes,TimeInterpolator,TypeEvaluator在剖析过程中我们会解析相关类的作用和实现方式2.常用的 属性动画 方法: 12345ObjectAni">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://dailycast.github.io/深入理解Android属性动画的实现-1/"/>
+
+
+
+
+
+  <title>深入理解Android属性动画的实现-1 | DailyCast 技术团队博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">DailyCast 技术团队博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dailycast.github.io/深入理解Android属性动画的实现-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="DailyCast">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="DailyCast 技术团队博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深入理解Android属性动画的实现-1</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-25T22:07:15+08:00">
+                2017-11-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="导读"><a href="#导读" class="headerlink" title="导读"></a>导读</h3><p>在文章开头我们先简单回忆一下常用的属性动画 <code>API</code> 有哪些？<br>1.动画相关的类:<br><code>ObjectAnimator</code>,<code>ValueAnimator</code>,<code>Property</code>,<code>PropertyValuesHolder</code>,<code>Keyframe</code>,<code>Keyframes</code>,<code>TimeInterpolator</code>,<code>TypeEvaluator</code><br>在剖析过程中我们会解析相关类的作用和实现方式<br>2.常用的 <code>属性动画</code> 方法:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ObjectAnimator.ofInt()</span><br><span class="line">ObjectAnimator.ofFloat()</span><br><span class="line">ObjectAnimator.ofArgb()</span><br><span class="line">ObjectAnimator.ofObject()</span><br><span class="line">ObjectAnimator.ofPropertyValuesHolder()</span><br></pre></td></tr></table></figure>
+<p>下面我们以一个常用的方法 <code>ObjectAnimator.ofInt()</code> 为切入点层层深入解析属性动画的创建过程。</p>
+<h3 id="动画的创建"><a href="#动画的创建" class="headerlink" title="动画的创建"></a>动画的创建</h3><p>早期版本的属性动画 <code>ofInt</code> 方法有两个实现，到Android O 为止 已经有 4 个实现了。<br>主要就是增加了 <code>Path</code> 参数。我们这里并不去解析新方法，因为它的实现方式和最基本的方法相同。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ObjectAnimator <span class="title">ofInt</span><span class="params">(Object target, String propertyName, <span class="keyword">int</span>... values)</span> </span>&#123;</span><br><span class="line">        ObjectAnimator anim = <span class="keyword">new</span> ObjectAnimator(target, propertyName);</span><br><span class="line">        anim.setIntValues(values);</span><br><span class="line">        <span class="keyword">return</span> anim;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">ObjectAnimator <span class="title">ofInt</span><span class="params">(T target, Property&lt;T, Integer&gt; property, <span class="keyword">int</span>... values)</span> </span>&#123;</span><br><span class="line">        ObjectAnimator anim = <span class="keyword">new</span> ObjectAnimator(target, property);</span><br><span class="line">        anim.setIntValues(values);</span><br><span class="line">        <span class="keyword">return</span> anim;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p><em>注意:我这里以Android-25 源码为代码源。</em><br>上述代码中<code>ofInt</code> 方法的第一行均是 <code>创建 ObjectAnimator 对象</code>。但分别使用了两种构造方式。<br>下面我们探索一下 <code>ObjectAnimator</code> 的构造方法:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//无参构造</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ObjectAnimator</span><span class="params">()</span> </span>&#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//指定 propertyName</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">ObjectAnimator</span><span class="params">(Object target, String propertyName)</span> </span>&#123;</span><br><span class="line">  setTarget(target);</span><br><span class="line">  setPropertyName(propertyName);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//指定 Property</span></span><br><span class="line"> <span class="keyword">private</span> &lt;T&gt; ObjectAnimator(T target, Property&lt;T, ?&gt; property) &#123;</span><br><span class="line">    setTarget(target);</span><br><span class="line">    setProperty(property);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>无参构造方法没有什么可说的。另外两个构造方法第一行代码都是</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setTarget(target);</span><br></pre></td></tr></table></figure>
+<p>该<code>setTarget</code>方法的作用是记录需要做动画的对象，方便以后对该对象的相关属性做更改。</p>
+<p>1.我们首先看看 <code>propertyName</code> 参数的构造方法的<code>setPropertyName</code> 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPropertyName</span><span class="params">(@NonNull String propertyName)</span> </span>&#123;</span><br><span class="line">       <span class="keyword">if</span> (mValues != <span class="keyword">null</span>) &#123;</span><br><span class="line">           PropertyValuesHolder valuesHolder = mValues[<span class="number">0</span>];</span><br><span class="line">           String oldName = valuesHolder.getPropertyName();</span><br><span class="line">           valuesHolder.setPropertyName(propertyName);</span><br><span class="line">           mValuesMap.remove(oldName);</span><br><span class="line">           mValuesMap.put(propertyName, valuesHolder);</span><br><span class="line">       &#125;</span><br><span class="line">       mPropertyName = propertyName;</span><br><span class="line">       mInitialized = <span class="keyword">false</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>我们这里的调用情形，<code>mValues</code>肯定为null，不会走 <code>if</code>分支，剩下的就是简单的记录我们设置的<code>propertyName</code>用<code>mPropertyName</code>保持。如果<code>mValues</code>不为空的情况下，会更新 <code>mValues</code>的第一个元素的属性值，并更新对应的map集合<br>2.我们再看看<code>Property</code>参数的构造方法的<code>setProperty</code>方法，同样也是简单的记录<code>mProperty</code>和<code>mPropertyName</code><br><em>那么 这个<code>Property</code>是何方神圣？</em></p>
+<h3 id="Property-解析"><a href="#Property-解析" class="headerlink" title="Property 解析"></a>Property 解析</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Property</span>&lt;<span class="title">T</span>, <span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String mName;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Class&lt;V&gt; mType;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T, V&gt; <span class="function">Property&lt;T, V&gt; <span class="title">of</span><span class="params">(Class&lt;T&gt; hostType, Class&lt;V&gt; valueType, String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ReflectiveProperty&lt;T, V&gt;(hostType, valueType, name);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Property</span><span class="params">(Class&lt;V&gt; type, String name)</span> </span>&#123;</span><br><span class="line">        mName = name;</span><br><span class="line">        mType = type;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isReadOnly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(T object, V value)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> UnsupportedOperationException(<span class="string">"Property "</span> + getName() +<span class="string">" is read-only"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> V <span class="title">get</span><span class="params">(T object)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mName;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Class&lt;V&gt; <span class="title">getType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mType;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是一个 <code>abstract</code>修饰的类。这个类很简单，就是定义了一些需要被子类实现的方法。<em>(为了减小博客的字数，我这里隐去源码中的相关注释，如有需要请自行到源码中查看)</em><br>通过对注释的理解我们知道 这个类的注意功能就是<code>代表</code>需要动画的<code>属性</code>,实现这个类有一些先决条件需要满足:<br>必须满足一下三个条件中的一个<br>1.被 <code>Property</code> 代表的类的属性必须有一个<code>public</code>的无参的<code>get</code>方法，和一个可选的<code>set</code>方法，<code>set</code>方法的参数和<code>get</code>方法的返回值一个类型<br>2.有一个<code>public</code>的无参的<code>is</code> 方法，和一个可选的set方法 set方法的参数和is方法的返回值一个类型<br>3.一个<code>public</code>的 属性 <code>name</code>。<br>假如有 <code>get/is</code>方法，但是没有<code>set</code>方法，那么这个 <code>Property</code> 是一个只读的属性。<br><code>set</code> 方法必须实现，都在抛出异常<br>到目前为止我们了解了 动画初始化时会初始化 <code>mPropertyName</code>变量，记录属性的名称；或初始化<code>mProperty</code>，来保持对属性的访问能力和更新能力。<br><em>这里说明一下，常规情况下需要满足这三个中一个即可,如果我们又其他方式来变量属性值，而且也在 <code>Property</code> 中做了相应的映射关系，不满足也可以。这个在之后文章中自定义属性动画中可以看出</em><br>我们回到之前的 <code>ofInt</code>方法<br>紧接着 执行了 代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">anim.setIntValues(values);</span><br></pre></td></tr></table></figure>
+<p>这行代码看似简单，其实包含了很多信息。从字面意思理解，就是保存动画的属性值范围。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setIntValues</span><span class="params">(<span class="keyword">int</span>... values)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mValues == <span class="keyword">null</span> || mValues.length == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mProperty != <span class="keyword">null</span>) &#123;</span><br><span class="line">                setValues(PropertyValuesHolder.ofInt(mProperty, values));</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                setValues(PropertyValuesHolder.ofInt(mPropertyName, values));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">super</span>.setIntValues(values);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>第一次调用 <code>mValues</code>为 <code>null</code>走入<code>if</code>流程，假如我们调用的 <code>propertyName</code>参数的方法，会执行<code>setValues(PropertyValuesHolder.ofInt(mPropertyName, values));</code>,反之执行<code>setValues(PropertyValuesHolder.ofInt(mProperty, values));</code><br>我们先看看<code>PropertyValuesHolder.ofInt(mProperty, values)</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> PropertyValuesHolder <span class="title">ofInt</span><span class="params">(Property&lt;?, Integer&gt; property, <span class="keyword">int</span>... values)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> IntPropertyValuesHolder(property, values);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">IntPropertyValuesHolder</span><span class="params">(Property property, <span class="keyword">int</span>... values)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">super</span>(property);</span><br><span class="line">            setIntValues(values);</span><br><span class="line">            <span class="keyword">if</span> (property <span class="keyword">instanceof</span>  IntProperty) &#123;</span><br><span class="line">                mIntProperty = (IntProperty) mProperty;</span><br><span class="line">            &#125;</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setIntValues</span><span class="params">(<span class="keyword">int</span>... values)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">super</span>.setIntValues(values);</span><br><span class="line">            mIntKeyframes = (Keyframes.IntKeyframes) mKeyframes;</span><br><span class="line">&#125;</span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setIntValues</span><span class="params">(<span class="keyword">int</span>... values)</span> </span>&#123;</span><br><span class="line">        mValueType = <span class="keyword">int</span>.class;</span><br><span class="line">        mKeyframes = KeyframeSet.ofInt(values);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>该方法主要的作用就是创建一个<code>PropertyValuesHolder</code>,保持属性<code>Property</code><br>并将 属性值保存成<code>关键帧</code>，我们关注核心如何生成关键帧 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> KeyframeSet <span class="title">ofInt</span><span class="params">(<span class="keyword">int</span>... values)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> numKeyframes = values.length;</span><br><span class="line">        IntKeyframe keyframes[] = <span class="keyword">new</span> IntKeyframe[Math.max(numKeyframes,<span class="number">2</span>)];</span><br><span class="line">        <span class="keyword">if</span> (numKeyframes == <span class="number">1</span>) &#123;</span><br><span class="line">            keyframes[<span class="number">0</span>] = (IntKeyframe) Keyframe.ofInt(<span class="number">0f</span>);</span><br><span class="line">            keyframes[<span class="number">1</span>] = (IntKeyframe) Keyframe.ofInt(<span class="number">1f</span>, values[<span class="number">0</span>]);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            keyframes[<span class="number">0</span>] = (IntKeyframe) Keyframe.ofInt(<span class="number">0f</span>, values[<span class="number">0</span>]);</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; numKeyframes; ++i) &#123;</span><br><span class="line">                keyframes[i] =</span><br><span class="line">                        (IntKeyframe) Keyframe.ofInt((<span class="keyword">float</span>) i / (numKeyframes - <span class="number">1</span>), values[i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> IntKeyframeSet(keyframes);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码是生成关键帧的逻辑:<br>1.判断值的个数，如果只有一个值。那么分配长度为2的<code>IntKeyframe</code>数组,并将值保持在第二个位置。<br>2.如果多于一个值，会分配 值个数 长度的数组，将每一个数值都保持在数组对应的位置。<br>需要注意的是:除了第一帧，其他帧都分配了<code>fraction</code>,这个系数有这些数字的传入顺序决定。假如我们传入3个值，第一帧的系数默认为0，第二帧的系数为0.5，最后一个值得系数是1<br>。这个系数在后来动画的执行中为生成相应的属性值起到关键作用。</p>
+<p>到目前为止，我们知道<code>PropertyValuesHolder</code>持有了<code>Property</code>并将动画的值保存成关键帧，并持有这些关键帧。</p>
+<p>同样<code>setValues(PropertyValuesHolder.ofInt(mPropertyName, values));</code>方法也相同的方式生成了<code>PropertyValuesHolder</code>并持有 生成的关键帧</p>
+<p>然后我们分析一下<code>setValues</code>方法。<br>这是父类 <code>ValueAnimator</code>的方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setValues</span><span class="params">(PropertyValuesHolder... values)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> numValues = values.length;</span><br><span class="line">        mValues = values;</span><br><span class="line">        mValuesMap = <span class="keyword">new</span> HashMap&lt;String, PropertyValuesHolder&gt;(numValues);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numValues; ++i) &#123;</span><br><span class="line">            PropertyValuesHolder valuesHolder = values[i];</span><br><span class="line">            mValuesMap.put(valuesHolder.getPropertyName(), valuesHolder);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// New property/values/target should cause re-initialization prior to starting</span></span><br><span class="line">        mInitialized = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>主要功能：<br>1.保存前面生成的 <code>PropertyValuesHolder</code>,用 <code>mValues</code>持有引用。<br>2.将 <code>PropertyValuesHolder</code>数组按照属性名为key，<code>PropertyValuesHolder</code>为值保存至map中，并标记为初始化<code>mInitialized = false</code>,在下一篇文章中会提到何时将标记位<code>mInitialized</code>置为 <code>true</code></p>
+<p>到目前为止我们已经分析完了 <code>ObjectAnimator.ofInt</code>方法。<br>其中有几个未解释到的类:<br>1.PropertyValuesHolder<br>2.Keyframe</p>
+<h3 id="PropertyValuesHolder"><a href="#PropertyValuesHolder" class="headerlink" title="PropertyValuesHolder"></a>PropertyValuesHolder</h3><p>由前面的分析我们大致知道 <code>PropertyValuesHolder</code> 持有了 <code>Property</code>或<code>mPropertyName</code>,以及持有 关键帧。<br>除此之外，它还有 属性<code>mSetter</code>,<code>mGetter</code>,<code>mEvaluator</code><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Method mSetter = <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">private</span> Method mGetter = <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">private</span> TypeEvaluator mEvaluator;</span><br></pre></td></tr></table></figure></p>
+<p>以及一堆 <code>of</code>方法 </p>
+<pre><code>ofInt
+ofMultiInt
+ofFloat
+ofMultiFloat
+ofObject
+ofKeyframe
+</code></pre><p>这些 <code>of</code>方法我们前面解析过 <code>ofInt</code> 这里不再展开解释。<br>看到 <code>mSetter</code>和<code>mGetter</code>方法，我们联想到这个类肯定会操作 动画对象的属性。果不其然，让我们找到了 <code>setupSetter</code>和<code>setupGetter</code> 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">void</span> <span class="title">setupSetter</span><span class="params">(Class targetClass)</span> </span>&#123;</span><br><span class="line">        Class&lt;?&gt; propertyType = mConverter == <span class="keyword">null</span> ? mValueType : mConverter.getTargetType();</span><br><span class="line">        mSetter = setupSetterOrGetter(targetClass, sSetterPropertyMap, <span class="string">"set"</span>, propertyType);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Utility function to get the getter from targetClass</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setupGetter</span><span class="params">(Class targetClass)</span> </span>&#123;</span><br><span class="line">        mGetter = setupSetterOrGetter(targetClass, sGetterPropertyMap, <span class="string">"get"</span>, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>这两个方法通过 拼接<code>set</code> 和<code>get</code>，通过反射获取属性的 get set 方法，从而获得对象属性的控制权。<br>当然 一些<code>PropertyValuesHolder</code>的子类重载使用了 jni 方法获得反射方法。其实都是目的都是一样。</p>
+<p>当然，获得了这些属性的控制权，自然会更新这些属性</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setAnimatedValue</span><span class="params">(Object target)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mProperty != <span class="keyword">null</span>) &#123;</span><br><span class="line">            mProperty.set(target, getAnimatedValue());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (mSetter != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                mTmpValueArray[<span class="number">0</span>] = getAnimatedValue();</span><br><span class="line">                mSetter.invoke(target, mTmpValueArray);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InvocationTargetException e) &#123;</span><br><span class="line">                Log.e(<span class="string">"PropertyValuesHolder"</span>, e.toString());</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">                Log.e(<span class="string">"PropertyValuesHolder"</span>, e.toString());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>这个 <code>setAnimatedValue</code>方法就是用于更新这些属性；如果有 <code>mProperty</code>就通过 <code>Property</code>更新属性，如果没有的话，就通过反射更新。<br>当然在更新属性之前需要计算出正确的属性值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">calculateValue</span><span class="params">(<span class="keyword">float</span> fraction)</span> </span>&#123;</span><br><span class="line">       Object value = mKeyframes.getValue(fraction);</span><br><span class="line">       mAnimatedValue = mConverter == <span class="keyword">null</span> ? value : mConverter.convert(value);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p><code>calculateValue</code>方法就是用于计算这些值。计算又用到了<code>Keyframes</code>，下面分析关键帧相关的API。到此为止我们理解了 <code>PropertyValuesHolder</code>的作用</p>
+<p>总结一下：<br>1.持有 <code>Property</code> 用于获取,更新属性的能力。<br>2.持有 <code>mPropertyName</code> 通过反射获取<code>get</code> , <code>set</code> 方法，获取更新属性的能力<br>3.计算属性的值<br>4.更新属性<br>所以 <code>PropertyValuesHolder</code>就是控制动画对象属性的关键。所以也很容易理解，为什么所有的属性动画的value都转化成<code>PropertyValuesHolder</code>来操作.</p>
+<h3 id="Keyframe"><a href="#Keyframe" class="headerlink" title="Keyframe"></a>Keyframe</h3><p>下面我们在详细了解下何为关键帧，它是如何运作的?<br>先看几个关于<code>关键帧</code>的类 <code>Keyframe</code>,<code>Keyframes</code> 以及它们的子类<br><code>Keyframe</code>顾名思义就是记录关键帧数据,他默认有<code>三个</code>实现类<code>IntKeyframe</code>,<code>FloatKeyframe</code>,<code>ObjectKeyframe</code>,当然我们也能继承<code>Keyframe</code>实现自己的关键帧类型。不过大部分情况，提供的这三种方式已经够用了。<br><code>Keyframe</code> 有三个重要的<code>属性值</code>:<br>1.<code>mHasValue</code> 用于记录关键帧是否初始化了值，以 子类 <strong>IntKeyframe</strong> 为例，它有两个构造方法:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">IntKeyframe(<span class="keyword">float</span> fraction, <span class="keyword">int</span> value) &#123;</span><br><span class="line">            mFraction = fraction;</span><br><span class="line">            mValue = value;</span><br><span class="line">            mValueType = <span class="keyword">int</span>.class;</span><br><span class="line">            mHasValue = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">IntKeyframe(<span class="keyword">float</span> fraction) &#123;</span><br><span class="line">            mFraction = fraction;</span><br><span class="line">            mValueType = <span class="keyword">int</span>.class;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>第一个构造初始化了 <code>mValue</code> ，同时 <code>mHasValue</code>会标记 为<code>true</code>;<br>第二个构造方法 只初始化了 <code>mFraction</code>，并未给 <code>mValue</code>赋值，默认 <code>mHasValue</code>为<code>false</code>，假如我们使用了<code>mHasValue</code>为 <code>false</code>的 关键帧。那么在动画初始化时会调用<code>PropertyValuesHolder.setupSetterAndGetter</code>给每一个关键帧赋初始值。</p>
+<p>2.<code>mFraction</code>记录该关键帧所有关键帧中的位置，<code>float</code>类型，值范围<code>0 - 1</code><br>3.<code>mValue</code>记录value值，当然不同类型的<code>Keyframe</code> value值类型也不同，所以 <code>mValue</code>由子类实现</p>
+<h3 id="Keyframes"><a href="#Keyframes" class="headerlink" title="Keyframes"></a>Keyframes</h3><p>我们可以认为 <code>Keyframes</code>是一堆 <code>Keyframe</code>组成的集合。<br>先看看继承体系:<br>它的实现类有<code>KeyframeSet</code>,<code>PathKeyframes</code>,它的子接口 有<code>IntKeyframes</code>,<code>FloatKeyframes</code><br>我们看看常用的<code>KeyframeSet</code>,继承它的两个子类<code>IntKeyframeSet</code>,<code>FloatKeyframeSet</code>,通知实现了对应的<code>IntKeyframes</code>和<code>FloatKeyframes</code>接口。</p>
+<p>其实 <code>Keyframes</code>最核心的方法是<code>getValue</code>方法，其子实现均是为了实现它。下面是<code>KeyframeSet</code>的<code>getValue</code>方法的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">getValue</span><span class="params">(<span class="keyword">float</span> fraction)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mNumKeyframes == <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mInterpolator != <span class="keyword">null</span>) &#123;</span><br><span class="line">                fraction = mInterpolator.getInterpolation(fraction);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> mEvaluator.evaluate(fraction, mFirstKeyframe.getValue(),</span><br><span class="line">                    mLastKeyframe.getValue());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (fraction &lt;= <span class="number">0f</span>) &#123;</span><br><span class="line">            <span class="keyword">final</span> Keyframe nextKeyframe = mKeyframes.get(<span class="number">1</span>);</span><br><span class="line">            <span class="keyword">final</span> TimeInterpolator interpolator = nextKeyframe.getInterpolator();</span><br><span class="line">            <span class="keyword">if</span> (interpolator != <span class="keyword">null</span>) &#123;</span><br><span class="line">                fraction = interpolator.getInterpolation(fraction);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">float</span> prevFraction = mFirstKeyframe.getFraction();</span><br><span class="line">            <span class="keyword">float</span> intervalFraction = (fraction - prevFraction) /</span><br><span class="line">                (nextKeyframe.getFraction() - prevFraction);</span><br><span class="line">            <span class="keyword">return</span> mEvaluator.evaluate(intervalFraction, mFirstKeyframe.getValue(),</span><br><span class="line">                    nextKeyframe.getValue());</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (fraction &gt;= <span class="number">1f</span>) &#123;</span><br><span class="line">            <span class="keyword">final</span> Keyframe prevKeyframe = mKeyframes.get(mNumKeyframes - <span class="number">2</span>);</span><br><span class="line">            <span class="keyword">final</span> TimeInterpolator interpolator = mLastKeyframe.getInterpolator();</span><br><span class="line">            <span class="keyword">if</span> (interpolator != <span class="keyword">null</span>) &#123;</span><br><span class="line">                fraction = interpolator.getInterpolation(fraction);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">float</span> prevFraction = prevKeyframe.getFraction();</span><br><span class="line">            <span class="keyword">float</span> intervalFraction = (fraction - prevFraction) /</span><br><span class="line">                (mLastKeyframe.getFraction() - prevFraction);</span><br><span class="line">            <span class="keyword">return</span> mEvaluator.evaluate(intervalFraction, prevKeyframe.getValue(),</span><br><span class="line">                    mLastKeyframe.getValue());</span><br><span class="line">        &#125;</span><br><span class="line">        Keyframe prevKeyframe = mFirstKeyframe;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; mNumKeyframes; ++i) &#123;</span><br><span class="line">            Keyframe nextKeyframe = mKeyframes.get(i);</span><br><span class="line">            <span class="keyword">if</span> (fraction &lt; nextKeyframe.getFraction()) &#123;</span><br><span class="line">                <span class="keyword">final</span> TimeInterpolator interpolator = nextKeyframe.getInterpolator();</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">float</span> prevFraction = prevKeyframe.getFraction();</span><br><span class="line">                <span class="keyword">float</span> intervalFraction = (fraction - prevFraction) /</span><br><span class="line">                    (nextKeyframe.getFraction() - prevFraction);</span><br><span class="line">                <span class="comment">// Apply interpolator on the proportional duration.</span></span><br><span class="line">                <span class="keyword">if</span> (interpolator != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    intervalFraction = interpolator.getInterpolation(intervalFraction);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> mEvaluator.evaluate(intervalFraction, prevKeyframe.getValue(),</span><br><span class="line">                        nextKeyframe.getValue());</span><br><span class="line">            &#125;</span><br><span class="line">            prevKeyframe = nextKeyframe;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// shouldn't reach here</span></span><br><span class="line">        <span class="keyword">return</span> mLastKeyframe.getValue();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>该方法核心是 通过参数<code>fraction</code>(时间流逝比)来计算对应的属性值，计算出来的值如无<code>TypeConverter</code>转换需求，那就会把这个值设置到 动画<code>Target</code>的属性上，从而实现属性动画对属性的更改。<br>观察到这里还使用了一个<code>TypeEvaluator</code>,这哥们大家估计通过其他途径都了解过，我们经常把 <code>TimeInterpolator</code>和<code>TypeEvaluator</code>一起来解释属性动画的原理，即插值器和估值器对属性动画的作用。我们这里不展开讨论，只基于源码去分析。<br>我们先看第一个<code>if</code>分支  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (mNumKeyframes == <span class="number">2</span>) &#123;</span><br><span class="line">   <span class="keyword">if</span> (mInterpolator != <span class="keyword">null</span>) &#123;</span><br><span class="line">      fraction = mInterpolator.getInterpolation(fraction);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> mEvaluator.evaluate(fraction, mFirstKeyframe.getValue(),</span><br><span class="line">                    mLastKeyframe.getValue());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对应当仅有两个关键帧时的情况。举个例子，假如我们调用<code>ObjectAnimator.ofInt</code>方法只传入了一个<code>int</code>值，这里的 <code>mNumKeyframes</code>会是2,而且看注释，只有在这种情况下才使用<code>mInterpolator</code>-插值器。通过插值器 得到<code>修正后的系数fraction</code>，然后拿这个系数，通过<code>估值器mEvaluator</code>计算出属性值。我们发现估值器是何等的重要，必须要被赋值的，否则无法计算出属性值。<br>继续 <code>if (fraction &lt;= 0f)</code>和<code>if (fraction &gt;= 1f)</code>这两个分支是特殊情况，出现在动画第一帧和最后一帧的情况。<br>下面看看正常动画中的分支流程：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Keyframe prevKeyframe = mFirstKeyframe;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; mNumKeyframes; ++i) &#123;</span><br><span class="line">            Keyframe nextKeyframe = mKeyframes.get(i);</span><br><span class="line">            <span class="keyword">if</span> (fraction &lt; nextKeyframe.getFraction()) &#123;</span><br><span class="line">                <span class="keyword">final</span> TimeInterpolator interpolator = nextKeyframe.getInterpolator();</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">float</span> prevFraction = prevKeyframe.getFraction();</span><br><span class="line">                <span class="keyword">float</span> intervalFraction = (fraction - prevFraction) /</span><br><span class="line">                    (nextKeyframe.getFraction() - prevFraction);</span><br><span class="line">                <span class="comment">// Apply interpolator on the proportional duration.</span></span><br><span class="line">                <span class="keyword">if</span> (interpolator != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    intervalFraction = interpolator.getInterpolation(intervalFraction);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> mEvaluator.evaluate(intervalFraction, prevKeyframe.getValue(),</span><br><span class="line">                        nextKeyframe.getValue());</span><br><span class="line">            &#125;</span><br><span class="line">            prevKeyframe = nextKeyframe;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>通过<code>fraction</code>查找符合<code>fraction &lt; nextKeyframe.getFraction()</code>的第一帧，然后计算 <code>fraction</code>在前一帧到当前帧范围内的位置，例如查找到符合条件的当前帧 fraction =0.5;前一帧fraction = 0.2, 动画当前的 fraction =0.3，那么新的 intervalFraction = 1/3f。然后拿着这个值给估值器计算属性值。</p>
+<p>到目前为止我们知道了，关键帧的作用如下:<br>1.保存每个关键帧的值<br>2.保存每个关键帧的 fraction<br>3.通过动画类传入的 fraction，利用估值器计算出 真正的属性值。</p>
+<p>那么剩下的就是如何将这些计算出来的<code>属性值</code>设置到对应的<code>Target</code>上了。这个问题我们下一篇分析动画的启动原理时会再分析。</p>
+<h3 id="回顾"><a href="#回顾" class="headerlink" title="回顾"></a>回顾</h3><p>1.以<code>ObjectAnimator.ofInt</code>为切入点 分析 ObjectAnimator对象的创建<br>2.属性名称<code>propertyName</code>和<code>Property</code>的作用:<br>    propertyName 用于拼接 get/set方法，获得控制属性的能力;<br>    Property 利用自己的<code>get</code>和<code>set</code>方法直接控制属性。</p>
+<ol>
+<li><code>PropertyValuesHolder</code>的作用:通过 propertyName 或 Property 获取更新属性的能力;根据动画时间流逝比计算属性的值;更新属性值到对应的<code>Target</code>上  </li>
+<li>关键帧 <code>keyframe</code>用于保存动画的每一个关键数据帧，个数由传入的 value 个数决定,系数 fraction 由 value 传入顺序决定。  </li>
+<li><code>keyframes</code>以及它的子类<code>KeyframeSet</code>的作用:利用估值器和 fraction 计算出应该更新到 <code>Target</code>上的属性值。</li>
+</ol>
+<p>基本API 解析完毕，下一篇我们会分析动画如何开始的，fraction系数如何得到的，以及何时更新 属性值。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:</strong>
+    DailyCast
+  </li>
+  <li class="post-copyright-link">
+    <strong>Post link:</strong>
+    <a href="http://dailycast.github.io/深入理解Android属性动画的实现-1/" title="深入理解Android属性动画的实现-1">http://dailycast.github.io/深入理解Android属性动画的实现-1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice: </strong>
+    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> unless stating additionally.
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/动画/" rel="tag"># 动画</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/Java-形参与实参/" rel="next" title="Java 形参与实参">
+                <i class="fa fa-chevron-left"></i> Java 形参与实参
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/Android属性动画分析/" rel="prev" title="Android属性动画分析">
+                Android属性动画分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="commenthub_thread"></div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">DailyCast</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#导读"><span class="nav-number">1.</span> <span class="nav-text">导读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动画的创建"><span class="nav-number">2.</span> <span class="nav-text">动画的创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Property-解析"><span class="nav-number">3.</span> <span class="nav-text">Property 解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PropertyValuesHolder"><span class="nav-number">4.</span> <span class="nav-text">PropertyValuesHolder</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Keyframe"><span class="nav-number">5.</span> <span class="nav-text">Keyframe</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Keyframes"><span class="nav-number">6.</span> <span class="nav-text">Keyframes</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#回顾"><span class="nav-number">7.</span> <span class="nav-text">回顾</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">DailyCast</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+  
+      <script type="text/javascript">
+        var commenthub_id = '33658114';
+        var commenthub_website = 'http://dailycast.github.io';
+        var commenthub_identifier = '深入理解Android属性动画的实现-1/';
+        var commenthub_url = 'http://dailycast.github.io/深入理解Android属性动画的实现-1/';
+        var commenthub_title = '深入理解Android属性动画的实现-1';
+        var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = 'https://commenthub.herokuapp.com/js/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      </script>
+  
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
