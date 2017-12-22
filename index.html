@@ -259,7 +259,7 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-21T11:46:13+08:00">
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-21T21:46:13+08:00">
                 2017-12-21
               </time>
             
@@ -473,158 +473,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://dailycast.github.io/Android属性动画分析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="DailyCast">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="DailyCast 技术团队博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/Android属性动画分析/" itemprop="url">Android属性动画分析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-26T10:54:26+08:00">
-                2017-11-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index">
-                    <span itemprop="name">Android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="属性动画分析概略"><a href="#属性动画分析概略" class="headerlink" title="属性动画分析概略"></a>属性动画分析概略</h3><p>Android 动画分三类:<br><code>Drawable Animation</code>:几帧图循环播放；<br><code>View Animation</code> : 只有基本的 <code>缩放</code>，<code>平移</code>，<code>旋转</code>，<code>渐变</code>，通过对 <code>Canvas</code> 操作来实现。只在绘制层做了动画假象，实际属性并未改变<br><code>ValueAnimator</code>:属性动画，可以实现更平滑的动画和对属性的变更。</p>
-<p>我将从以下几个方面分析 属性动画的实现原理  </p>
-<ol>
-<li>通过常用 <code>ObjectAnimator.of..</code> 方法切入,深入分析 <code>PropertyValueHolder</code>,<code>Property</code>,<code>Keyframe</code>的实现原理和作用。    </li>
-<li>通过对属性动画的启动方式的解析 代入 Android 新的渲染方式(黄油计划)  </li>
-<li>属性动画其他常用API的使用  </li>
-<li><code>ValueAnimator</code>和<code>ObjectAnimator</code>的关系以及如何选择  </li>
-<li>高级的属性动画自定义方式。例如自定义<code>PropertyValueHolder</code>和自定义<code>keygrame</code>实现属性动画效果。  </li>
-</ol>
-<p>针对源码分析,前三篇文章会涉及的多一些，也更能体会到Android属性动画设计的巧妙和灵活之处。后几篇文章着重应用。</p>
-<p><strong>作为一个有责任心的程序员</strong>，我希望通过这几篇文章，能帮助小伙伴们更深入理解Android属性动画，而不仅仅局限在使用上。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://dailycast.github.io/深入理解Android属性动画的实现-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -656,8 +504,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-25T22:07:15+08:00">
-                2017-11-25
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-26T22:07:15+08:00">
+                2017-11-26
               </time>
             
 
@@ -785,6 +633,158 @@ ofKeyframe
 <li><code>keyframes</code>以及它的子类<code>KeyframeSet</code>的作用:利用估值器和 fraction 计算出应该更新到 <code>Target</code>上的属性值。</li>
 </ol>
 <p>基本API 解析完毕，下一篇我们会分析动画如何开始的，fraction系数如何得到的，以及何时更新 属性值。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://dailycast.github.io/Android属性动画分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="DailyCast">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="DailyCast 技术团队博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/Android属性动画分析/" itemprop="url">Android属性动画分析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-25T10:54:26+08:00">
+                2017-11-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="属性动画分析概略"><a href="#属性动画分析概略" class="headerlink" title="属性动画分析概略"></a>属性动画分析概略</h3><p>Android 动画分三类:<br><code>Drawable Animation</code>:几帧图循环播放；<br><code>View Animation</code> : 只有基本的 <code>缩放</code>，<code>平移</code>，<code>旋转</code>，<code>渐变</code>，通过对 <code>Canvas</code> 操作来实现。只在绘制层做了动画假象，实际属性并未改变<br><code>ValueAnimator</code>:属性动画，可以实现更平滑的动画和对属性的变更。</p>
+<p>我将从以下几个方面分析 属性动画的实现原理  </p>
+<ol>
+<li>通过常用 <code>ObjectAnimator.of..</code> 方法切入,深入分析 <code>PropertyValueHolder</code>,<code>Property</code>,<code>Keyframe</code>的实现原理和作用。    </li>
+<li>通过对属性动画的启动方式的解析 代入 Android 新的渲染方式(黄油计划)  </li>
+<li>属性动画其他常用API的使用  </li>
+<li><code>ValueAnimator</code>和<code>ObjectAnimator</code>的关系以及如何选择  </li>
+<li>高级的属性动画自定义方式。例如自定义<code>PropertyValueHolder</code>和自定义<code>keygrame</code>实现属性动画效果。  </li>
+</ol>
+<p>针对源码分析,前三篇文章会涉及的多一些，也更能体会到Android属性动画设计的巧妙和灵活之处。后几篇文章着重应用。</p>
+<p><strong>作为一个有责任心的程序员</strong>，我希望通过这几篇文章，能帮助小伙伴们更深入理解Android属性动画，而不仅仅局限在使用上。</p>
 
           
         
